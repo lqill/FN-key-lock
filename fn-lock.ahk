@@ -19,12 +19,12 @@ if FileExist(A_Startup . LINK_NAME)
 
 Gui, Add, Text, x0 y10 w272 h20 +Center vStatus, (FN Keys Status: Unlocked)
 Gui, Add, Text, x32 yp+25 w100 hp , Toggle Lock
-Gui, Add, Button, x100 yp w100 gToggleLock hp, Ctrl+Alt+L
+Gui, Add, Button, x100 yp w100 gToggleLock hp, Windows+Esc
 
 loop, %F_KEYS%
 {
 	Gui, Add, Text, x32 yp+25 w50 hp , F%A_Index%
-	Gui, Add, ComboBox, x100 yp w150 vA%A_index%, Browser_Forward|Brightness_up|Brightness_down|Brightness_default|Custom App|Browser_Back|Browser_Refresh|Browser_Stop|Browser_Search|Browser_Favorites|Browser_Home|Volume_Mute|Volume_Down|Volume_Up|Media_Next|Media_Prev|Media_Stop|Media_Play_Pause|Launch_Mail|Launch_Media|Help|Sleep|PrintScreen|CtrlBreak|Break|AppsKey|NumpadDot|NumpadDiv|NumpadMult|NumpadAdd|NumpadSub|NumpadEnter|Tab|Enter|Esc|BackSpace|Del|Insert|Home|End|PgUp|PgDn|Up|Down|Left|Right|ScrollLock|CapsLock|NumLock|Pause
+	Gui, Add, ComboBox, x100 yp w150 vA%A_index%, Browser_Forward|Brightness_up|Brightness_down|Brightness_default|Custom App|Browser_Back|Browser_Refresh|Browser_Stop|Browser_Search|Browser_Favorites|Browser_Home|Volume_Mute|Volume_Down|Volume_Up|Media_Next|Media_Prev|Media_Stop|Media_Play_Pause|Launch_Mail|Launch_Media|Help|Sleep|PrintScreen|CtrlBreak|Break|AppsKey|NumpadDot|NumpadDiv|NumpadMult|NumpadAdd|NumpadSub|NumpadEnter|Tab|Enter|Esc|BackSpace|Del|Insert|Home|End|PgUp|PgDn|Up|Down|Left|Right|ScrollLock|CapsLock|NumLock|Pause|Screen_Off|Projection|Touchpad_Toggle
 	Gui, Add, Button, xp+160 yp w20 vB%A_index% gAppSelectButton, % chr(128194)
 }
 Gui, Add, Button, x82 yp+35 w100 gApply, Apply
@@ -66,7 +66,7 @@ if (enabled_mode){
 return
 
 ; Toggle Lock
-^!l::
+#escape::
 ToggleLock:
 	is_locked := !is_locked
 
@@ -123,6 +123,27 @@ OnKeyPress:
 				return
 		case "Brightness_default":
 				ChangeBrightness( CurrentBrightness := 50 )
+				return
+		case "Sleep":
+				Sleep, 1000 ; Wait for 1 second to release the keys
+				DllCall("PowrProf\SetSuspendState", "int", 0, "int", 0, "int", 0)
+				Return
+		case "Screen_Off":
+				Sleep, 1000 ; Wait for 1 second
+				SendMessage, 0x112, 0xF170, 2, , Program Manager 
+				Return
+		case "Projection":
+				Send, #p 
+				Return
+		case "Touchpad_Toggle":
+				touchpadEnabled := !touchpadEnabled
+				if (touchpadEnabled) {
+					Run, C:\Windows\system32\SystemSettingsAdminFlows.exe EnableTouchPad 0
+					TrayTip,% GUI_NAME ,Touchpad Off, 5, 3
+				} else {
+					Run, C:\Windows\system32\SystemSettingsAdminFlows.exe EnableTouchPad 1
+					TrayTip,% GUI_NAME ,Touchpad On, 5, 3
+				}
 				return
 		default:
 			send, {%str_val%}
